@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/cloudflare/workers-sdk/main/packages/wrangler/config-schema.json",
+  "name": "netease-music-mcp-edge",
+  "main": "worker.js",
+  "compatibility_date": "2026-10-28",
+  "account_id": "YOUR_ACCOUNT_ID",
+  "workers_dev": true,
+  "vpc_networks": [
+    {
+      "binding": "NETEASE_MCP_VPC",
+      "tunnel_id": "YOUR_TUNNEL_ID",
+      "remote": true
+    }
+  ]
+}
