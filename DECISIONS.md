@@ -16,6 +16,8 @@
 | DEC-008 | 2026-09-28 | superseded | web QR context 与短期网页登录共用单次内存 attempt | DEC-009 |
 | DEC-009 | 2026-09-28 | active | 8821 由原网页登录页承接网易官方交互验证 | 无 |
 | DEC-010 | 2026-10-28 | active | 指定歌曲播放复用同一 MCP 的受限 Mac 工具边界 | 无 |
+| DEC-011 | 2026-10-29 | active | iPhone 一起听由同一 MCP 内的独立控制账号加入或主持 | 无 |
+| DEC-012 | 2026-11-07 | active | Portable Agent Skill 作为编排层，MCP server 保持唯一数据与执行层 | 无 |
 
 ## 决策记录
 
@@ -237,4 +239,38 @@
 - 重新考虑条件：网易提供正式的同账号多设备远程播放接口，或原生一起听协议取消 host 与
   participant 的账号区分。
 - 替代：同一主账号自邀请，以及匿名 controller probe。
+- 被替代：无
+
+
+### DEC-012：Portable Agent Skill 作为编排层，MCP server 保持唯一数据与执行层
+
+- 日期：2026-11-07
+- 状态：active
+- 决策：为陌生用户和跨 Agent 使用新增一个可移植的 `SKILL.md` 编排层，但不为 Skill 重写、
+  分叉或复制 MCP server 的数据、认证、登录态、安全、幂等、审计与写后核验逻辑。Skill 只描述
+  何时调用哪些现有工具、如何解释听歌上下文、何时允许账户写入、怎样处理只读和失败路径。
+  frontmatter 只采用跨 Agent 最稳的 `name` 与 `description`，主体保持普通 Markdown，不依赖
+  单一 Agent 的 hooks、tool allowlist 或私有路径。
+- 背景：项目收到把现有开源 MCP 包装成 Agent Skill 的外部需求信号。当前 server 本体已经具备
+  私人单 deployment、OAuth/PKCE、二维码 session、默认只读、显式写权限、幂等、审计和高层策展
+  写入；真正缺口是陌生 Agent 如何把这些能力组织成稳定体验，而不是继续扩张 server。
+- 理由：把“工具能力”和“调用体验”分层，可以保持 server contract 稳定，同时让 ChatGPT、Codex
+  及其他支持 MCP / SKILL.md 的 Agent 复用同一套策展工作流。Skill 不能成为第二份安全 authority，
+  也不能把某个客户端的临时限制反写成产品能力缩水。
+- 兼容性与声明边界：新增 `docs/CONNECT_CLIENTS.md` 与 `docs/SMOKE_TESTS.md`。只有经过真实
+  client → MCP → NetEase 代表性旅程的客户端才能标记为 confirmed；仅支持 MCP、仅能解析
+  `SKILL.md` 或仅通过静态格式检查，不足以建立 confirmed claim。额外客户端在真实验收前只写
+  compatible in principle / not verified。
+- Marketplace 边界：Skill marketplace 只分发编排说明时，MCP server 仍是 prerequisite。每位
+  使用者应连接自己的 private deployment；不得把维护者的部署、网易云 session、Cookie、Bearer
+  token、OAuth password 或其他凭据作为 Skill 的组成部分分享。
+- 证据：`skills/netease-music-companion/SKILL.md`、`docs/CONNECT_CLIENTS.md`、
+  `docs/SMOKE_TESTS.md`；现役 `README.md`、`server.py`、`DEC-001`、`DEC-004`、
+  `DEC-005`、`DEC-007`；Agensi 当前 SKILL.md / marketplace packaging 文档。
+- 影响：以后新增 Agent 支持应优先改 Skill 或连接文档，不因营销兼容性给 server 叠
+  vendor-specific wrapper。只有真实 interoperability failure 证明 server contract 本身有缺陷，
+  才进入 server 修复。
+- 重新考虑条件：MCP server 的产品边界发生实质变化，例如引入正式多租户账号模型、服务端内建
+  推荐/策展算法，或主流 Agent Skill 标准出现不兼容的新 mandatory contract。
+- 替代：无
 - 被替代：无
