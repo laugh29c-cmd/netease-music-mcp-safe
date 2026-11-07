@@ -91,13 +91,23 @@ PASS requires:
 - final metadata and ordered songs are verified by the server or an explicit readback;
 - a partial/unknown result is not reported as success.
 
+## Current receipt — 2026-11-07 ChatGPT connector
+
+A fresh read-path smoke was performed from the current ChatGPT surface against the live private deployment.
+
+- **Journey A: PASS for the read path.** `get_netease_login_status` returned an authenticated QR-login session with persistent storage configured, and `daily_recommend` returned real account-scoped recommendations.
+- **Journey B: PASS.** `get_play_history` returned explicitly aggregated all-time play counts, while `get_recent_plays` returned a separate recent event stream with `played_at_local`, timezone, and bounded limitations. The two semantics were kept distinct.
+- **Journey C: NOT VERIFIED on this ChatGPT connector.** The current tool catalog does not expose `create_curated_playlist` or the other playlist account-write tools. No write was attempted and no playlist was created for this smoke.
+
+This is a surface-level result, not a product-capability downgrade: the server repository still contains its write capability contract. The current connector must expose the write tools and appropriate scope before Journey C can be promoted to PASS.
+
 ## Client matrix
 
 The matrix records evidence, not marketing claims.
 
 | Client | Intended path | Current status before skill-specific smoke | Promotion condition |
 | --- | --- | --- | --- |
-| ChatGPT Work/Web | public HTTPS + OAuth | Existing project connection path; skill-specific smoke still needs a fresh receipt | Journeys A–C PASS on current deployment |
+| ChatGPT Work/Web | public HTTPS + OAuth | **Fresh 2026-11-07 read-path receipt:** Journeys A–B PASS; Journey C NOT VERIFIED because write tools are not exposed on the current connector | Expose/authorize the bounded write path, then Journey C PASS |
 | Codex app / CLI / IDE | loopback + protected Bearer helper | Existing project connection path; skill-specific smoke still needs a fresh receipt | Journeys A–C PASS on current deployment |
 | Claude Code | Streamable HTTP MCP using its supported auth path | Candidate third client; **not verified** | Journeys A–C PASS without vendor-specific changes to the skill |
 
