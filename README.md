@@ -66,6 +66,30 @@ MIT License 发布；iPhone “一起听”协议形状参考了 MIT 许可的
 iPhone 发起房间，再把官方邀请交给 `join_mobile_netease_player`；服务端不会把“加入请求
 成功”误报成“手机已经播放”。
 
+## Portable Agent Skill
+
+仓库现在同时提供一个面向 Agent 的可移植使用层：
+
+```text
+skills/netease-music-companion/SKILL.md
+```
+
+它不是第二个 MCP、也不把服务端逻辑复制进 prompt。MCP 仍负责真实数据、登录态、OAuth、
+输入校验、幂等、审计和写后核验；Skill 负责告诉调用 Agent **什么时候读什么、如何理解听歌
+上下文、什么时候允许写，以及失败时不能假装成功**。
+
+Skill 只使用跨 Agent 最稳的 `name` / `description` frontmatter 和普通 Markdown，不依赖
+Claude、Codex、Cursor 或其他单一客户端的 hooks / tool allowlist。客户端仍须先连接自己的
+NetEase Music MCP deployment。
+
+- 通用 MCP 连接原则：[docs/CONNECT_CLIENTS.md](docs/CONNECT_CLIENTS.md)
+- Codex 已有连接说明：[docs/CONNECT_CODEX.md](docs/CONNECT_CODEX.md)
+- 跨客户端真实验收：[docs/SMOKE_TESTS.md](docs/SMOKE_TESTS.md)
+
+对于 Agensi 一类 Skill marketplace，这个目录可以作为单一 Skill 打包；marketplace 只分发
+Skill 指令，不托管本 MCP server。发布时应把 MCP 作为 prerequisite，让每位用户连接自己的
+private deployment，而不是共享维护者的网易云账号或凭据。
+
 ## 架构概览
 
 ```mermaid
@@ -143,6 +167,7 @@ MCP deployment”，不是为每位访问者建立独立网易云登录的多租
 ## 目录
 
 - [What can I do with it?](#what-can-i-do-with-it)
+- [Portable Agent Skill](#portable-agent-skill)
 - [架构概览](#架构概览)
 - [Quick Start](#quick-start)
 - [账户模型与安全分享](#账户模型与安全分享)
