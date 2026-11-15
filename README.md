@@ -90,6 +90,32 @@ NetEase Music MCP deployment。
 Skill 指令，不托管本 MCP server。发布时应把 MCP 作为 prerequisite，让每位用户连接自己的
 private deployment，而不是共享维护者的网易云账号或凭据。
 
+
+### Marketplace listing source
+
+The portable repository source remains the listing authority; a marketplace package must not include
+the MCP server, runtime state, databases, cookies, tokens, private endpoints or account data.
+
+- **Name:** NetEase Music Companion
+- **Summary:** Turn a private NetEase Music MCP deployment into a personal listening companion for
+  recommendations, listening-context analysis, coherent playlist curation, and optional verified
+  account writes—without putting cookies or tokens in chat.
+- **Compatibility:** Requires an Agent that can connect to both the marketplace and a private
+  NetEase Music MCP deployment over Streamable HTTP. The current ChatGPT Work/Web path is verified
+  for login, real reads, analysis and a bounded playlist create/add write. Codex has a documented
+  connection path but still needs a fresh marketplace-loaded Skill smoke; Claude Code, Cursor,
+  Copilot and other clients remain unverified.
+- **Needs access to:** the user's own NetEase Music MCP deployment and NetEase account. The official
+  NetEase Music app is required for QR confirmation. Account writes additionally require
+  `MCP_READ_ONLY=false`, refreshed tool definitions and the `netease.write` scope.
+- **Public listing boundary:** daily recommendations, listening history and recent plays, playlist
+  and podcast reads, QR-session recovery, playlist curation, and optional bounded playlist writes.
+  Generic profile editing and generic multi-account selection are not public listing claims until
+  those contracts exist in the public repository and receive real acceptance evidence.
+- **Package:** one `netease-music-companion/` folder containing `SKILL.md`, the repository
+  `LICENSE`, and `THIRD_PARTY_NOTICES.md`. Keep listing metadata in the marketplace form so the
+  portable Skill frontmatter remains limited to `name` and `description`.
+
 ## 架构概览
 
 ```mermaid

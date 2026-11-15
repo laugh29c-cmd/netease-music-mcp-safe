@@ -91,15 +91,16 @@ PASS requires:
 - final metadata and ordered songs are verified by the server or an explicit readback;
 - a partial/unknown result is not reported as success.
 
-## Current receipt — 2026-11-07 ChatGPT connector
+## Current receipt — 2026-11-15 ChatGPT connector
 
-A fresh read-path smoke was performed from the current ChatGPT surface against the live private deployment.
+The latest evidence combines the fresh 2026-11-07 read smoke with sanitized audit records from real account writes on 2026-11-13 and a current login-status readback on 2026-11-15.
 
-- **Journey A: PASS for the read path.** `get_netease_login_status` returned an authenticated QR-login session with persistent storage configured, and `daily_recommend` returned real account-scoped recommendations.
-- **Journey B: PASS.** `get_play_history` returned explicitly aggregated all-time play counts, while `get_recent_plays` returned a separate recent event stream with `played_at_local`, timezone, and bounded limitations. The two semantics were kept distinct.
-- **Journey C: NOT VERIFIED on this ChatGPT connector.** The current tool catalog does not expose `create_curated_playlist` or the other playlist account-write tools. No write was attempted and no playlist was created for this smoke.
+- **Journey A: PASS for the read path.** The current deployment remains authenticated through QR login with persistent storage configured. The 2026-11-07 smoke confirmed real account-scoped recommendations.
+- **Journey B: PASS.** The 2026-11-07 smoke kept aggregated all-time play counts separate from recent events with local-time context and bounded limitations.
+- **Journey C: PARTIAL PASS on this ChatGPT surface.** The current catalog now exposes playlist write tools. On 2026-11-13, one private playlist creation succeeded and one `add_to_playlist` call added the intended song; the audit after-state contained that song and no duplicate retry was made. A preceding overlong-title attempt failed explicitly instead of being reported as success.
+- **Full high-level Journey C remains NOT VERIFIED on this surface.** The latest receipt did not call `create_curated_playlist`, so the complete one-call metadata, ordering and post-write verification path has not yet received a fresh ChatGPT receipt.
 
-This is a surface-level result, not a product-capability downgrade: the server repository still contains its write capability contract. The current connector must expose the write tools and appropriate scope before Journey C can be promoted to PASS.
+The current private runtime also exposes generic account selection and profile tools. One `update_my_profile` audit entry completed, but its before- and after-state were identical, so it is not evidence of a meaningful profile mutation. Those generic profile and account-selection contracts are also absent from the current public repository. They are runtime evidence only and must not be promoted as public marketplace features until released and independently accepted.
 
 ## Client matrix
 
@@ -107,7 +108,7 @@ The matrix records evidence, not marketing claims.
 
 | Client | Intended path | Current status before skill-specific smoke | Promotion condition |
 | --- | --- | --- | --- |
-| ChatGPT Work/Web | public HTTPS + OAuth | **Fresh 2026-11-07 read-path receipt:** Journeys A–B PASS; Journey C NOT VERIFIED because write tools are not exposed on the current connector | Expose/authorize the bounded write path, then Journey C PASS |
+| ChatGPT Work/Web | public HTTPS + OAuth | **Fresh through 2026-11-15:** Journeys A–B PASS; bounded `create_playlist` + `add_to_playlist` write PASS; high-level `create_curated_playlist` still NOT VERIFIED | Run one intentional high-level curated write with final metadata/order readback for full Journey C PASS |
 | Codex app / CLI / IDE | loopback + protected Bearer helper | Existing project connection path; skill-specific smoke still needs a fresh receipt | Journeys A–C PASS on current deployment |
 | Claude Code | Streamable HTTP MCP using its supported auth path | Candidate third client; **not verified** | Journeys A–C PASS without vendor-specific changes to the skill |
 
@@ -131,6 +132,6 @@ Structural portability PASS is necessary but does not replace the real-client sm
 
 Until the fresh matrix is complete, use conservative wording such as:
 
-> Portable SKILL.md orchestration for a connected NetEase Music MCP deployment. Current repository paths cover ChatGPT and Codex; additional clients require their own MCP compatibility smoke test.
+> Portable SKILL.md orchestration for a connected private NetEase Music MCP deployment. The current ChatGPT Work/Web path is verified for QR-session recovery, real reads, listening-context analysis, and a bounded playlist create/add write. The high-level curated-write journey and additional clients still require their own fresh MCP compatibility smoke.
 
 After all three clients pass, the listing may name those exact client/version combinations as confirmed.
