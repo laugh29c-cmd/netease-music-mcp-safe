@@ -34,6 +34,7 @@ from image_safety import normalize_cover_image, validate_file_reference
 from mac_playback import (
     MacPlaybackError,
     control_player,
+    play_playlist,
     play_song,
     player_status,
     set_output_volume,
@@ -229,11 +230,13 @@ SESSION_MUTATING_TOOL_NAMES = {
 MAC_PLAYBACK_TOOL_NAMES = {
     "get_mac_netease_player_status",
     "play_song",
+    "play_playlist_on_mac",
     "control_mac_netease_player",
     "set_mac_output_volume",
 }
 MAC_PLAYBACK_MUTATING_TOOL_NAMES = {
     "play_song",
+    "play_playlist_on_mac",
     "control_mac_netease_player",
     "set_mac_output_volume",
 }
@@ -704,6 +707,13 @@ MAC_PLAYBACK_TOOLS = [
         "Play one numeric NetEase song ID in the official Mac client. The server constructs the fixed NetEase Web desktop-play command internally, accepts no arbitrary URL or command, and returns a best-effort playing/paused state without claiming the current track ID was readable.",
         {"song_id": {"type": "integer", "minimum": 1}},
         ["song_id"],
+        read_only=False,
+    ),
+    _tool(
+        "play_playlist_on_mac",
+        "Play one numeric NetEase playlist ID in the official Mac client. The server constructs the fixed NetEase desktop-play command internally, accepts no arbitrary URL or command, and returns a best-effort playing/paused state without claiming the current playlist ID was readable.",
+        {"playlist_id": {"type": "integer", "minimum": 1}},
+        ["playlist_id"],
         read_only=False,
     ),
     _tool(
@@ -4666,6 +4676,8 @@ def call_tool(name: str, arguments: dict[str, Any]) -> str:
         return _json_text(player_status())
     if name == "play_song":
         return _json_text(play_song(arguments.get("song_id")))
+    if name == "play_playlist_on_mac":
+        return _json_text(play_playlist(arguments.get("playlist_id")))
     if name == "control_mac_netease_player":
         return _json_text(control_player(arguments.get("action")))
     if name == "set_mac_output_volume":

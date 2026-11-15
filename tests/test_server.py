@@ -212,6 +212,16 @@ class ToolTests(unittest.TestCase):
             play_schema["inputSchema"]["properties"]["song_id"],
             {"type": "integer", "minimum": 1},
         )
+        playlist_schema = next(
+            tool for tool in tools if tool["name"] == "play_playlist_on_mac"
+        )
+        self.assertEqual(
+            playlist_schema["inputSchema"]["required"], ["playlist_id"]
+        )
+        self.assertEqual(
+            playlist_schema["inputSchema"]["properties"]["playlist_id"],
+            {"type": "integer", "minimum": 1},
+        )
         self.assertEqual(
             set(enabled.OAUTH_SCOPE.split()),
             {"netease.read", "netease.session", "mac.playback"},
@@ -224,6 +234,10 @@ class ToolTests(unittest.TestCase):
         ) as status, mock.patch.object(
             module, "play_song", return_value={"accepted": True, "requested_song_id": 186016}
         ) as play, mock.patch.object(
+            module,
+            "play_playlist",
+            return_value={"accepted": True, "requested_playlist_id": 424242424242},
+        ) as play_playlist, mock.patch.object(
             module, "control_player", return_value={"accepted": True}
         ) as control, mock.patch.object(
             module, "set_output_volume", return_value={"output_volume": 42}
@@ -241,6 +255,13 @@ class ToolTests(unittest.TestCase):
             self.assertTrue(
                 json.loads(
                     module.call_tool(
+                        "play_playlist_on_mac", {"playlist_id": 424242424242}
+                    )
+                )["accepted"]
+            )
+            self.assertTrue(
+                json.loads(
+                    module.call_tool(
                         "control_mac_netease_player", {"action": "play_pause"}
                     )
                 )["accepted"]
@@ -253,6 +274,7 @@ class ToolTests(unittest.TestCase):
             )
         status.assert_called_once_with()
         play.assert_called_once_with(186016)
+        play_playlist.assert_called_once_with(424242424242)
         control.assert_called_once_with("play_pause")
         volume.assert_called_once_with(42)
 

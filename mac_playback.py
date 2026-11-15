@@ -214,15 +214,16 @@ def playback_state() -> dict[str, Any]:
     return value
 
 
-def play_song(song_id: int) -> dict[str, Any]:
-    """Open one validated song ID in the official client and read back player state."""
-    _require_macos()
-    if isinstance(song_id, bool) or not isinstance(song_id, int) or song_id <= 0:
-        raise ValueError("song_id must be a positive integer")
+def _play_resource(resource_type: str, resource_id: int) -> dict[str, Any]:
+    """Open one allowlisted NetEase resource in the official client."""
+    if resource_type not in {"song", "playlist"}:
+        raise ValueError("resource_type must be song or playlist")
+    if isinstance(resource_id, bool) or not isinstance(resource_id, int) or resource_id <= 0:
+        raise ValueError(f"{resource_type}_id must be a positive integer")
     if not APP_PATH.is_dir():
         raise MacPlaybackError("NeteaseMusic.app is not installed in /Applications.")
     payload = json.dumps(
-        {"type": "song", "id": song_id, "cmd": "play"},
+        {"type": resource_type, "id": resource_id, "cmd": "play"},
         ensure_ascii=False,
         separators=(",", ":"),
     ).encode("utf-8")
@@ -239,13 +240,27 @@ def play_song(song_id: int) -> dict[str, Any]:
         "accepted": True,
         "application": "NeteaseMusic",
         "bundle_id": BUNDLE_ID,
-        "requested_song_id": song_id,
+        f"requested_{resource_type}_id": resource_id,
         "dispatch": "accepted_by_launch_services",
-        "method": "allowlisted_orpheus_base64_song_command",
+        "method": f"allowlisted_orpheus_base64_{resource_type}_command",
         "playback_state": readback,
-        "current_song_id": None,
-        "current_song_id_verification": "unavailable_from_official_mac_client",
+        f"current_{resource_type}_id": None,
+        f"current_{resource_type}_id_verification": (
+            "unavailable_from_official_mac_client"
+        ),
     }
+
+
+def play_song(song_id: int) -> dict[str, Any]:
+    """Open one validated song ID in the official client and read back player state."""
+    _require_macos()
+    return _play_resource("song", song_id)
+
+
+def play_playlist(playlist_id: int) -> dict[str, Any]:
+    """Open one validated playlist ID in the official client and read back player state."""
+    _require_macos()
+    return _play_resource("playlist", playlist_id)
 
 
 _CONTROL_MENU_NAMES = {

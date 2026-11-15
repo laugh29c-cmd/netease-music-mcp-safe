@@ -56,9 +56,9 @@ MIT License 发布；iPhone “一起听”协议形状参考了 MIT 许可的
 
 > 先列出我拥有的歌单并说明准备修改哪一张；只在我确认后更新简介，不要改变歌曲顺序。
 
-在 MCP 运行于 macOS 且显式启用 `MCP_MAC_PLAYBACK_ENABLED=true` 时，同一服务还会注册四个
-本地附加工具，用于按搜索结果中的歌曲 ID 播放、检查官方网易云客户端状态、播放/暂停、上一首、
-下一首和设置 Mac 输出音量；它们不会启动第二个 MCP 服务。
+在 MCP 运行于 macOS 且显式启用 `MCP_MAC_PLAYBACK_ENABLED=true` 时，同一服务还会注册五个
+本地附加工具，用于按搜索结果中的歌曲 ID 或自己的歌单 ID 播放、检查官方网易云客户端状态、
+播放/暂停、上一首、下一首和设置 Mac 输出音量；它们不会启动第二个 MCP 服务。
 
 设置 `MCP_MOBILE_PLAYBACK_ENABLED=true` 后，同一服务还可用一个独立控制账号加入或创建
 原生“一起听”房间，让登录日常账号的 iPhone 官方网易云 App 接收指定歌曲、播放、暂停和
@@ -332,7 +332,7 @@ macOS 上注册 **4 个本地播放附加工具**，以及注册 **9 个 iPhone 
 
 ### macOS 本地播放附加工具
 
-设置 `MCP_MAC_PLAYBACK_ENABLED=true` 后，这四个工具进入同一个 `/mcp` 的 `tools/list`。播放
+设置 `MCP_MAC_PLAYBACK_ENABLED=true` 后，这五个工具进入同一个 `/mcp` 的 `tools/list`。播放
 命令按官方 `NeteaseMusic.app` 的可访问菜单项定位，不使用屏幕坐标，也不会把命令发给浏览器
 或 Apple Music。第一次控制时 macOS 可能要求为实际运行 MCP 的 Python/进程授予辅助功能和
 自动化权限。
@@ -341,6 +341,7 @@ macOS 上注册 **4 个本地播放附加工具**，以及注册 **9 个 iPhone 
 | --- | --- |
 | `get_mac_netease_player_status` | 返回客户端是否安装、是否运行、客户端版本和 Mac 当前输出音量；不读取歌曲内容。 |
 | `play_song` | `song_id` 必须是正整数。服务端只会把固定的 `{"type":"song","id":<id>,"cmd":"play"}` 桌面播放命令编码为 `orpheus://` URL 并交给官方客户端，不接受任意 URL 或命令；返回客户端当前 `playing` / `paused` / `unknown` 状态证据，但在官方客户端未暴露当前曲目 ID 时不会谎称已读回。 |
+| `play_playlist_on_mac` | `playlist_id` 必须是正整数。服务端只会把固定的 `{"type":"playlist","id":<id>,"cmd":"play"}` 桌面播放命令交给官方客户端；返回播放状态证据，但不会把无法读回的当前歌单 ID 冒充为已验证。 |
 | `control_mac_netease_player` | `action` 为 `launch`、`play_pause`、`previous` 或 `next`；明确控制官方网易云 Mac 客户端。 |
 | `set_mac_output_volume` | 把 Mac 系统输出音量设为 `0`–`100` 的精确整数。 |
 
@@ -780,7 +781,7 @@ python -m py_compile server.py
 git diff --check
 ```
 
-当前测试套件规模为 **165 项**，覆盖核心读取、写入、OAuth/PKCE、时区、SQLite 迁移与
+当前测试套件规模为 **167 项**，覆盖核心读取、写入、OAuth/PKCE、时区、SQLite 迁移与
 持久化、session 优先级、Cookie/CSRF 解析、认证错误分类、二维码状态转换、幂等、审计、
 撤销、封面安全、工具分发、直接网络路径、Mac 播放、iPhone 原生“一起听”控制和失败边界。
 大部分上游网络

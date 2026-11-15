@@ -1,3 +1,4 @@
+import base64
 import json
 import shutil
 import subprocess
@@ -94,6 +95,47 @@ class MacPlaybackTests(unittest.TestCase):
         for invalid in (0, -1, True, "186016", 186016.0):
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
                 mac_playback.play_song(invalid)
+
+    def test_play_playlist_uses_allowlisted_numeric_deep_link_and_reads_state(self):
+        fake_path = mock.Mock()
+        fake_path.is_dir.return_value = True
+        readback = {
+            "state": "playing",
+            "verified": True,
+            "evidence": "accessible_playback_menu_action",
+            "observedMenuAction": "暂停",
+        }
+        with mock.patch.object(mac_playback, "APP_PATH", fake_path), mock.patch.object(
+            mac_playback, "_run", return_value=completed(["open"])
+        ) as run, mock.patch.object(
+            mac_playback, "playback_state", return_value=readback
+        ) as state:
+            result = mac_playback.play_playlist(424242424242)
+        command = run.call_args.args[0]
+        self.assertEqual(
+            command[:4], ["/usr/bin/open", "-g", "-b", "com.netease.163music"]
+        )
+        self.assertTrue(command[4].startswith("orpheus://"))
+        payload = json.loads(
+            base64.b64decode(command[4].removeprefix("orpheus://"))
+        )
+        self.assertEqual(
+            payload,
+            {"type": "playlist", "id": 424242424242, "cmd": "play"},
+        )
+        state.assert_called_once_with()
+        self.assertEqual(result["requested_playlist_id"], 424242424242)
+        self.assertEqual(result["playback_state"], readback)
+        self.assertIsNone(result["current_playlist_id"])
+        self.assertEqual(
+            result["current_playlist_id_verification"],
+            "unavailable_from_official_mac_client",
+        )
+
+    def test_play_playlist_rejects_non_positive_or_non_integer_ids(self):
+        for invalid in (0, -1, True, "424242424242", 424242424242.0):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                mac_playback.play_playlist(invalid)
 
     def test_playback_state_reads_the_official_clients_menu_action(self):
         fake_path = mock.Mock()
