@@ -133,6 +133,13 @@ For Mac playback, a safe specified-song sequence is:
 2. `play_song` with that ID.
 3. Report only the playback state the tool actually reads back. Do not claim the current track ID was verified when the client cannot expose it.
 
+For a whole NetEase playlist, use `play_playlist_on_mac` only when it is present:
+
+1. Identify the exact playlist with `list_my_playlists` or a user-supplied numeric playlist ID.
+2. Confirm the intended playlist when similarly named playlists could be confused.
+3. Call `play_playlist_on_mac` once with that numeric ID.
+4. Report only the best-effort playing/paused state returned by the tool. Do not claim the current playlist ID was read back when the Mac client cannot expose it.
+
 Mac playback only controls the official NetEase Music app on the same Mac as the MCP runtime. A remote Linux/hosted deployment cannot control an unrelated local Mac.
 
 iPhone "Listen Together" tools use a separate purpose-limited controller account when enabled. Follow the exposed tool schemas and status readbacks; do not treat request acceptance as proof that the phone is already playing.
